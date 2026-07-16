@@ -471,7 +471,7 @@ export default function Index() {
                           </span>
                         </p>
 
-                        <p className="text-[11px] text-slate-400 font-medium truncate">
+                        <p className="text-[11px] text-slate-400 font-medium">
                           {jenjangList.join(", ")} —{" "}
                           <span className="text-slate-500 font-semibold">
                             {prodList.map((p) => p.title).join(", ")}
