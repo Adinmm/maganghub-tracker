@@ -52,24 +52,13 @@ export default function AffirmationPopup() {
   }, []);
 
   useEffect(() => {
-    // Cek apakah di sesi ini user sudah pernah menutup popup
-    const hasSeenAffirmation = sessionStorage.getItem("showAffirmation");
+    // Delay 800ms sebelum muncul agar transisi terasa lebih natural setelah halaman selesai load
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 800);
 
-    // Jika belum pernah ditutup (belum ada flag 'false' di sessionStorage)
-    if (hasSeenAffirmation !== "false") {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 800);
-
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
-
-  // Fungsi untuk menutup popup & menyimpan status ke sessionStorage
-  const handleClose = () => {
-    sessionStorage.setItem("showAffirmation", "false");
-    setIsOpen(false);
-  };
 
   if (!isOpen) return null;
 
@@ -97,7 +86,7 @@ export default function AffirmationPopup() {
         {/* Tombol Penutup yang Cute */}
         <div className="mt-6">
           <button
-            onClick={handleClose}
+            onClick={() => setIsOpen(false)}
             className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-extrabold text-xs py-3 px-6 rounded-2xl shadow-lg shadow-rose-500/20 transition-all active:scale-95 duration-150"
           >
             Aamiin, Makasih Sayang! 🥰❤️

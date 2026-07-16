@@ -80,9 +80,6 @@ export default function Index() {
 
     return pages;
   })();
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   // Helper untuk mendapatkan daftar kabupaten berdasarkan kode provinsi
   function getKodeKabupaten() {
