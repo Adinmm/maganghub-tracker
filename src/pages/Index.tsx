@@ -592,7 +592,7 @@ export default function Index() {
               <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 text-xs font-semibold">
                 Halaman ini ga ada datanya bebb 🥺🥺🥺
               </div>
-            ) : (
+            ) : data?.data?.length === 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 text-xs font-semibold">
                 <p>
                   mmmm Maaf sayangg srvernya errorr 🥺🥺🥺, coba refreshh lagi
@@ -605,6 +605,8 @@ export default function Index() {
                   Refreshh disini bebb
                 </Button>
               </div>
+            ):(
+              <div></div>
             )}
           </div>
         </div>
