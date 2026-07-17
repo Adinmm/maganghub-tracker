@@ -1,6 +1,6 @@
 import { PopUp } from "@/components/utils/AlertDialog";
 import { useGetLoker } from "@/hooks/useGet";
-import { KodeProvinsi } from "@/lib/types";
+import { gaji, KodeProvinsi } from "@/lib/types";
 import { Button } from "@base-ui/react";
 import React, { useState, ChangeEvent, useMemo, useEffect } from "react";
 import {
@@ -42,7 +42,7 @@ export default function Index() {
     searchKeyword,
     page,
     100,
-    count
+    count,
   );
 
   const total = data?.meta?.pagination?.last_page ?? 0;
@@ -183,14 +183,25 @@ export default function Index() {
   }
 
   function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/\//g, "-")          // "/" -> "-"
-    .replace(/[^\w\s-]/g, "")     // hapus karakter selain huruf, angka, spasi, "-"
-    .replace(/\s+/g, "-")         // spasi -> "-"
-    .replace(/-+/g, "-");         // gabungkan "-" yang berurutan
-}
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/\//g, "-") // "/" -> "-"
+      .replace(/[^\w\s-]/g, "") // hapus karakter selain huruf, angka, spasi, "-"
+      .replace(/\s+/g, "-") // spasi -> "-"
+      .replace(/-+/g, "-"); // gabungkan "-" yang berurutan
+  }
+
+  const cekJurusan = filterOptions.jurusan.some(
+    (item) => item === selectedJurusan,
+  );
+
+  const getGaji = (idRegency: string) => {
+    const result = gaji?.data?.find(
+      (item: any) => item.regency_id === idRegency,
+    );
+    return result?.amount;
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans text-slate-900 antialiased">
@@ -404,6 +415,13 @@ export default function Index() {
                   100,
                 );
 
+                const registered = item.jumlah_terdaftar || 0;
+                const quota = item.jumlah_kuota || 0;
+                const acceptanceChance =
+                  registered === 0
+                    ? 100
+                    : Math.min(Math.round((quota / registered) * 100), 100);
+
                 return (
                   <div
                     key={item.id_posisi}
@@ -439,6 +457,9 @@ export default function Index() {
                             </span>
                           )}
                         </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md">
+                            💰 Rp {Number(getGaji(item?.perusahaan?.kode_kabupaten)).toLocaleString("id-ID")}
+                          </span>
 
                         <p className="text-xs font-bold text-slate-600">
                           {item.perusahaan?.nama_perusahaan}
@@ -491,37 +512,71 @@ export default function Index() {
 
                     {/* Sektor Kanan */}
                     <div className="flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
-                      <div className="text-left md:text-right min-w-[140px] space-y-0.5">
-                        <span className="text-xs font-bold text-slate-700 block truncate max-w-[180px]">
+                      {/* Informasi Lokasi */}
+                      <div className="text-left md:text-right min-w-[150px] space-y-0.5">
+                        <span className="text-xs font-bold text-slate-700 block truncate">
                           {item.perusahaan?.nama_kabupaten || "-"}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 block uppercase">
+
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">
                           {item.perusahaan?.nama_provinsi || "-"}
                         </span>
+
                         <span className="text-[10px] text-amber-600 font-bold block">
                           Batas:{" "}
                           {formatDate(item.jadwal?.tanggal_pendaftaran_akhir)}
                         </span>
                       </div>
 
-                      <div className="w-full md:w-24 space-y-1">
-                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
-                          <span>Kuota</span>
-                          <span>
-                            {item.jumlah_terdaftar || 0}/
-                            {item.jumlah_kuota || 0}
-                          </span>
+                      {/* Statistik */}
+                      <div className="w-full md:w-44 space-y-2">
+                        {/* Kuota */}
+                        <div>
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                            <span>Kuota</span>
+                            <span>
+                              {registered}/{quota}
+                            </span>
+                          </div>
+
+                          <div className="mt-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600"
+                              style={{ width: `${percentFilled}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full"
-                            style={{ width: `${percentFilled}%` }}
-                          />
+
+                        {/* Peluang Lolos */}
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-emerald-700">
+                              🎯 Peluang Lolos
+                            </span>
+
+                            <span className="text-sm font-extrabold text-emerald-600">
+                              {acceptanceChance}%
+                            </span>
+                          </div>
+
+                          <p className="text-[9px] text-emerald-600 mt-1">
+                            Berdasarkan rasio kuota dan jumlah pendaftar saat
+                            ini.
+                          </p>
                         </div>
                       </div>
 
+                      {/* Tombol */}
                       <div className="w-full md:w-auto flex justify-end">
-                        <button onClick={()=> window.open(`https://maganghub.kemnaker.go.id/magang-nasional/lowongan/${slugify(item.posisi)}-${item.id_posisi}`, "_blank")} className="whitespace-nowrap w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                        <button
+                          onClick={() =>
+                            window.open(
+                              `https://maganghub.kemnaker.go.id/magang-nasional/lowongan/${slugify(item.posisi)}-${item.id_posisi}`,
+                              "_blank",
+                            )
+                          }
+                          className="whitespace-nowrap w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm"
+                        >
                           Lamar Magang
                         </button>
                       </div>
@@ -532,6 +587,10 @@ export default function Index() {
             ) : isLoading ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 text-xs font-semibold">
                 Tungguu dulu ya bebb bentar hehe 😋😋😋
+              </div>
+            ) : clientFilteredJobs.length === 0 ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 text-xs font-semibold">
+                Halaman ini ga ada datanya bebb 🥺🥺🥺
               </div>
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 text-xs font-semibold">
